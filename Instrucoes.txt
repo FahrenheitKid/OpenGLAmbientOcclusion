@@ -1,0 +1,32 @@
+﻿Nome: Jordan Silva
+
+Comandos:
+
+Q - Reseta todas as transformacoes, voltando para a posicao inicial
+
+E - Ativa o modo de Escalar
+R - Ativa o modo de Rotacao
+T - Ativa o modo de Tranlacao
+
+Dependendo do modo ativado, os comandos seguintes relizarao a respectiva
+trasnformacao com um valor positivo ou negativo em algum eixo.
+
+Z - Aplica transformacao negativa no X
+X - Aplica transformacao positiva no X
+
+C - Aplica transformacao negativa no Y
+V - Aplica transformacao positiva no Y
+
+B - Aplica transformacao negativa no Z
+N - Aplica transformacao positiva no Z
+
+
+--- Camera
+Movimento WASD + mouse
+
+O vetor up da camera sempre será calculado da seguinte forma, utilizando o cross product do vetor Right e Front
+
+Right = glm::normalize(glm::cross(Front, WorldUp)); 
+Up = glm::normalize(glm::cross(Right, Front));
+
+PS: Lembre de rodar o projeto em Debug x86 e não x64!!!
