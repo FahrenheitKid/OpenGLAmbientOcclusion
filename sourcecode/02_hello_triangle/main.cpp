@@ -19,11 +19,9 @@ Based on OpenGL 4 Example Code.
 
 #include <glm\glm.hpp>
 #include <glm\gtc\type_ptr.hpp>
-#include <glm/vec3.hpp> // glm::vec3
-#include <glm/vec4.hpp> // glm::vec4
-#include <glm/mat4x4.hpp> // glm::mat4
-#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "Camera.h"
+#include "Shader.h"
+#include "Model.h"
 
 #define GL_LOG_FILE "gl.log"
 
@@ -46,12 +44,9 @@ Camera camera(glm::vec3(3.0f, 2.0f, 6.0f));
 
 bool firstMouse = true;
 
-//shader variables
-char vertex_shader[1024 * 256];
-char fragment_shader[1024 * 256];
-GLuint vs;
-GLuint fs;
-GLuint shader_programme;
+
+Shader* shader;
+Model* cube;
 
 //camera movement variables
 bool trans = false;
@@ -79,7 +74,7 @@ float rotratio = 10.0f;
 float transratio = 0.1f;
 
 //transformation variables
-glm::mat4 transform;
+glm::mat4 transformT;
 bool rotation_done = false;
 bool translation_done = false;
 
@@ -90,9 +85,6 @@ float spf = 0; // seconds per frame in milliseconds
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
-
-//functions prototype
-int shadersSetup();
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void do_movement();
@@ -138,153 +130,16 @@ void glfw_and_glew_Init()
 int main() {
 	glfw_and_glew_Init();
 
+
+	shader = new Shader();
+	shader->Initialize("test_vs.glsl", "test_fs.glsl");
+
+	cube = new Model("jaspion.obj");
 	
-	
-
-	/* OTHER STUFF GOES HERE NEXT */
-	//GLfloat points[] = { 0.0f, 0.5f, 0.0f, 0.5f, -0.5f, 0.0f, -0.5f, -0.5f, 0.0f };
-
-
-	// Our vertices. Three consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
-	// A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
-	static const GLfloat cube_points_and_colours[] = {
-		-1.0f,-1.0f,-1.0f,	 1.0f, 0.443f, 0.807f,
-		-1.0f,-1.0f, 1.0f,   0.003f, 0.803f, 0.996f,
-		-1.0f, 1.0f, 1.0f,   0.019f, 1.0f, 0.631f,
-		1.0f, 1.0f,-1.0f,    0.725f, 0.403f, 1.0f,
-		-1.0f,-1.0f,-1.0f,   1.0f, 0.984f, 0.588f,
-		-1.0f, 1.0f,-1.0f,   1.0f, 0.443f, 0.807f,
-		1.0f,-1.0f, 1.0f,    0.003f, 0.803f, 0.996f,
-		-1.0f,-1.0f,-1.0f,   0.019f, 1.0f, 0.631f,
-		1.0f,-1.0f,-1.0f,    0.725f, 0.403f, 1.0f,
-		1.0f, 1.0f,-1.0f,    1.0f, 0.984f, 0.588f,
-		1.0f,-1.0f,-1.0f,    1.0f, 0.443f, 0.807f,
-		-1.0f,-1.0f,-1.0f,   0.003f, 0.803f, 0.996f,
-		-1.0f,-1.0f,-1.0f,   0.019f, 1.0f, 0.631f,
-		-1.0f, 1.0f, 1.0f,   0.725f, 0.403f, 1.0f,
-		-1.0f, 1.0f,-1.0f,   1.0f, 0.984f, 0.588f,
-		1.0f,-1.0f, 1.0f,    1.0f, 0.443f, 0.807f,
-		-1.0f,-1.0f, 1.0f,   0.003f, 0.803f, 0.996f,
-		-1.0f,-1.0f,-1.0f,   0.019f, 1.0f, 0.631f,
-		-1.0f, 1.0f, 1.0f,   0.725f, 0.403f, 1.0f,
-		-1.0f,-1.0f, 1.0f,   1.0f, 0.984f, 0.588f,
-		1.0f,-1.0f, 1.0f,    1.0f, 0.443f, 0.807f,
-		1.0f, 1.0f, 1.0f,    0.003f, 0.803f, 0.996f,
-		1.0f,-1.0f,-1.0f,    0.019f, 1.0f, 0.631f,
-		1.0f, 1.0f,-1.0f,    0.725f, 0.403f, 1.0f,
-		1.0f,-1.0f,-1.0f,    1.0f, 0.984f, 0.588f,
-		1.0f, 1.0f, 1.0f,    1.0f, 0.443f, 0.807f,
-		1.0f,-1.0f, 1.0f,    0.003f, 0.803f, 0.996f,
-		1.0f, 1.0f, 1.0f,    0.019f, 1.0f, 0.631f,
-		1.0f, 1.0f,-1.0f,    0.725f, 0.403f, 1.0f,
-		-1.0f, 1.0f,-1.0f,   1.0f, 0.984f, 0.588f,
-		1.0f, 1.0f, 1.0f,    1.0f, 0.443f, 0.807f,
-		-1.0f, 1.0f,-1.0f,   0.003f, 0.803f, 0.996f,
-		-1.0f, 1.0f, 1.0f,   0.019f, 1.0f, 0.631f,
-		1.0f, 1.0f, 1.0f,    0.725f, 0.403f, 1.0f,
-		-1.0f, 1.0f, 1.0f,   1.0f, 0.984f, 0.588f,
-		1.0f,-1.0f, 1.0f,    1.0f, 0.443f, 0.807f,
-	};
-
-	//GLfloat colours[] = { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f };
-	//points			//colours
-	GLfloat points_and_colours[] = { 0.0f, 0.5f, 0.0f,	 1.00000f,  0.44314f,  0.80784f,
-									0.5f, -0.5f, 0.0f,  0.00392f,  0.80392f,  0.99608f,
-									-0.5f, -0.5f, 0.0f,	1.00000f,  0.98431f,  0.58824f };
-
-	/*
-	GLuint points_vbo;
-	glGenBuffers(1, &points_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), points, GL_STATIC_DRAW);
-
-	/* create a second VBO, containing the array of colours.
-	note that we could also put them both into a single vertex buffer. in this
-	case we would use the pointer and stride parameters of glVertexAttribPointer()
-	to describe the different data layouts 
-	GLuint colours_vbo;
-	glGenBuffers(1, &colours_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, colours_vbo);
-	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), colours, GL_STATIC_DRAW);
-	
-	*/
-	
-
-	GLuint points_and_colours_vbo;
-	glGenBuffers(1, &points_and_colours_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, points_and_colours_vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(points_and_colours), points_and_colours, GL_STATIC_DRAW);
-
-	GLuint cube_points_and_colours_vbo;
-	glGenBuffers(1, &cube_points_and_colours_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, cube_points_and_colours_vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_points_and_colours), cube_points_and_colours, GL_STATIC_DRAW);
-
-	/* create the VAO.
-	we bind each VBO in turn, and call glVertexAttribPointer() to indicate where
-	the memory should be fetched for vertex shader input variables 0, and 1,
-	respectively. we also have to explicitly enable both 'attribute' variables.
-	'attribute' is the older name for vertex shader 'in' variables. */
-
-
-	/*
-	
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-	glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glBindBuffer(GL_ARRAY_BUFFER, colours_vbo);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	*/
-	
-
-	// VAO com um único array interleaved e um único VBO
-	GLuint double_vao;
-	glGenVertexArrays(1, &double_vao);
-	//bind vao to work with
-	glBindVertexArray(double_vao);
-	//bind vbo to work with
-
-	glBindBuffer(GL_ARRAY_BUFFER, points_and_colours_vbo);
-
-	//index in the layout, number of components per atribute, type of data, normalize data flag, stride (byte offset between consecutive vertex atributes), offset to the first component of the first vertex atribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
-	// in the case above: position is in the 0 layout, we have 3 components (x,y,z), it is a float, we dont want to normalize the values, since each element has position (x,y,z) AND colours (r,g,b) there is a stride of 6 floats per element, position is the first component so no need for an offset
-	glEnableVertexAttribArray(0);
-
-	//color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 6 * sizeof(GLfloat), (GLvoid*)(sizeof(GLfloat) * 3));
-	glEnableVertexAttribArray(1);
-
-	// VAO com um único array interleaved e um único VBO
-	GLuint cube_double_vao;
-	glGenVertexArrays(1, &cube_double_vao);
-	//bind vao to work with
-	glBindVertexArray(cube_double_vao);
-	//bind vbo to work with
-
-	glBindBuffer(GL_ARRAY_BUFFER, cube_points_and_colours_vbo);
-
-	//index in the layout, number of components per atribute, type of data, normalize data flag, stride (byte offset between consecutive vertex atributes), offset to the first component of the first vertex atribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
-	// in the case above: position is in the 0 layout, we have 3 components (x,y,z), it is a float, we dont want to normalize the values, since each element has position (x,y,z) AND colours (r,g,b) there is a stride of 6 floats per element, position is the first component so no need for an offset
-	glEnableVertexAttribArray(0);
-
-	//color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 6 * sizeof(GLfloat), (GLvoid*)(sizeof(GLfloat) * 3));
-	glEnableVertexAttribArray(1);
-
-	shadersSetup();
 
 	glEnable(GL_CULL_FACE); // cull face
-	//glCullFace (GL_BACK); // cull back face
-	//glFrontFace (GL_CW); // GL_CCW for counter clock-wise
-
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glCullFace(GL_BACK);
+	glPolygonMode(GL_FRONT, GL_FILL);
 
 
 	// For speed computation
@@ -333,9 +188,11 @@ int main() {
 		// pass projection matrix to shader (note that in this case it could change every frame)
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
 
+		shader->Use();
+
 		//GLint modelLoc = glGetUniformLocation(shader_programme, "model");
-		GLint viewLoc = glGetUniformLocation(shader_programme, "view");
-		GLint projLoc = glGetUniformLocation(shader_programme, "projection");
+		GLint viewLoc = glGetUniformLocation(shader->m_programId, "view");
+		GLint projLoc = glGetUniformLocation(shader->m_programId, "projection");
 
 		// Pass the matrices to the shader
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
@@ -348,11 +205,8 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, g_gl_width, g_gl_height);
 
-		glUseProgram(shader_programme);
-		glBindVertexArray(cube_double_vao);
-		// draw points 0-3 from the currently bound VAO with current in-use shader
-		glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
-		// update other events like input handling
+		
+		cube->Draw(*shader);
 
 		if (GLFW_PRESS == glfwGetKey(g_window, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(g_window, 1);
@@ -370,79 +224,19 @@ void transformHandler()
 {
 	// Create transformations
 
-	//transform = glm::translate(transform, glm::vec3(transx, transy, transz));
-	//transform = glm::scale(transform, glm::vec3(scalex, scaley, scalez));
-	//transform = glm::rotate(transform, (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
-	//transform = glm::rotate(transform, glm::radians(rotx), glm::vec3(1.0f, 0.0f, 0.0f));
-	//transform = glm::rotate(transform, glm::radians(roty), glm::vec3(0.0f, 1.0f, 0.0f));
-	//transform = glm::rotate(transform, glm::radians(rotz), glm::vec3(0.0f, 0.0f, 1.0f));
-
 	//get transform location from shader
 	GLint transformLoc;
-	transformLoc = glGetUniformLocation(shader_programme, "model");
+	transformLoc = glGetUniformLocation(shader->m_programId, "model");
 
 	//pass matrix to that location in shader
-	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transformT));
 }
 
 // initialize and setups the shader
-int shadersSetup()
-{
-	assert(parse_file_into_str("test_vs.glsl", vertex_shader, 1024 * 256));
-	assert(parse_file_into_str("test_fs.glsl", fragment_shader, 1024 * 256));
-
-	vs = glCreateShader(GL_VERTEX_SHADER);
-	const GLchar* p = (const GLchar*)vertex_shader;
-	glShaderSource(vs, 1, &p, NULL);
-	glCompileShader(vs);
-
-	// check for compile errors
-	int params = -1;
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &params);
-	if (GL_TRUE != params) {
-		fprintf(stderr, "ERROR: GL shader index %i did not compile\n", vs);
-		print_shader_info_log(vs);
-		return 1; // or exit or something
-	}
-
-	fs = glCreateShader(GL_FRAGMENT_SHADER);
-	p = (const GLchar*)fragment_shader;
-	glShaderSource(fs, 1, &p, NULL);
-	glCompileShader(fs);
-
-	// check for compile errors
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &params);
-	if (GL_TRUE != params) {
-		fprintf(stderr, "ERROR: GL shader index %i did not compile\n", fs);
-		print_shader_info_log(fs);
-		return 1; // or exit or something
-	}
-
-	//glm::mat4 trans;
-	//trans = glm::rotate(trans, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-	shader_programme = glCreateProgram();
-	glAttachShader(shader_programme, fs);
-	glAttachShader(shader_programme, vs);
-	glLinkProgram(shader_programme);
-
-	glGetProgramiv(shader_programme, GL_LINK_STATUS, &params);
-	if (GL_TRUE != params) {
-		fprintf(
-			stderr,
-			"ERROR: could not link shader programme GL index %i\n",
-			shader_programme
-		);
-		print_programme_info_log(shader_programme);
-		return false;
-	}
-}
 
 
 void processCameraInput(GLFWwindow *window)
 {
-
-
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		camera.ProcessKeyboard(FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -451,22 +245,9 @@ void processCameraInput(GLFWwindow *window)
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
-
 }
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
-
-	/*
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime);
-	*/
-	
 
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
@@ -570,15 +351,15 @@ void do_movement()
 	{
 		if (scale)
 		{
-			transform = glm::scale(transform, glm::vec3(1.0 + scale_amount, 1.0f, 1.0f));
+			transformT= glm::scale(transformT, glm::vec3(1.0 + scale_amount, 1.0f, 1.0f));
 		}
 		if (rot)
 		{
-			transform = glm::rotate(transform, glm::radians(rot_amount), glm::vec3(1.0f, 0.0f, 0.0f));
+			transformT= glm::rotate(transformT, glm::radians(rot_amount), glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 		if (trans)
 		{
-			transform = glm::translate(transform, glm::vec3(trans_amount, 0, 0));
+			transformT= glm::translate(transformT, glm::vec3(trans_amount, 0, 0));
 		}
 	}
 
@@ -586,15 +367,15 @@ void do_movement()
 	{
 		if (scale)
 		{
-			transform = glm::scale(transform, glm::vec3(1.0f, 1.0 + scale_amount, 1.0f));
+			transformT= glm::scale(transformT, glm::vec3(1.0f, 1.0 + scale_amount, 1.0f));
 		}
 		if (rot)
 		{
-			transform = glm::rotate(transform, glm::radians(rot_amount), glm::vec3(0.0f, 1.0f, 0.0f));
+			transformT= glm::rotate(transformT, glm::radians(rot_amount), glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		if (trans)
 		{
-			transform = glm::translate(transform, glm::vec3(0, trans_amount, 0));
+			transformT= glm::translate(transformT, glm::vec3(0, trans_amount, 0));
 		}
 	}
 
@@ -602,15 +383,15 @@ void do_movement()
 	{
 		if (scale)
 		{
-			transform = glm::scale(transform, glm::vec3(1.0f, 1.0f, 1.0 + scale_amount));
+			transformT= glm::scale(transformT, glm::vec3(1.0f, 1.0f, 1.0 + scale_amount));
 		}
 		if (rot)
 		{
-			transform = glm::rotate(transform, glm::radians(rot_amount), glm::vec3(0.0f, 0.0f, 1.0f));
+			transformT= glm::rotate(transformT, glm::radians(rot_amount), glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 		if (trans)
 		{
-			transform = glm::translate(transform, glm::vec3(0, 0, trans_amount));
+			transformT= glm::translate(transformT, glm::vec3(0, 0, trans_amount));
 		}
 	}
 
@@ -618,15 +399,15 @@ void do_movement()
 	{
 		if (scale)
 		{
-			transform = glm::scale(transform, glm::vec3(1.0 - scale_amount, 1.0f, 1.0f));
+			transformT= glm::scale(transformT, glm::vec3(1.0 - scale_amount, 1.0f, 1.0f));
 		}
 		if (rot)
 		{
-			transform = glm::rotate(transform, glm::radians(-rot_amount), glm::vec3(1.0f, 0.0f, 0.0f));
+			transformT= glm::rotate(transformT, glm::radians(-rot_amount), glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 		if (trans)
 		{
-			transform = glm::translate(transform, glm::vec3(-trans_amount, 0, 0));
+			transformT= glm::translate(transformT, glm::vec3(-trans_amount, 0, 0));
 		}
 	}
 
@@ -634,15 +415,15 @@ void do_movement()
 	{
 		if (scale)
 		{
-			transform = glm::scale(transform, glm::vec3(1.0f, 1.0 - scale_amount, 1.0f));
+			transformT= glm::scale(transformT, glm::vec3(1.0f, 1.0 - scale_amount, 1.0f));
 		}
 		if (rot)
 		{
-			transform = glm::rotate(transform, glm::radians(-rot_amount), glm::vec3(0.0f, 1.0f, 0.0f));
+			transformT= glm::rotate(transformT, glm::radians(-rot_amount), glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		if (trans)
 		{
-			transform = glm::translate(transform, glm::vec3(0, -trans_amount, 0));
+			transformT= glm::translate(transformT, glm::vec3(0, -trans_amount, 0));
 		}
 	}
 
@@ -650,19 +431,18 @@ void do_movement()
 	{
 		if (scale)
 		{
-			transform = glm::scale(transform, glm::vec3(1.0f, 1.0f, 1.0 - scale_amount));
+			transformT= glm::scale(transformT, glm::vec3(1.0f, 1.0f, 1.0 - scale_amount));
 		}
 		if (rot)
 		{
-			transform = glm::rotate(transform, glm::radians(-rot_amount), glm::vec3(0.0f, 0.0f, 1.0f));
+			transformT = glm::rotate(transformT, glm::radians(-rot_amount), glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 		if (trans)
 		{
-			transform = glm::translate(transform, glm::vec3(0, 0, -trans_amount));
+			transformT = glm::translate(transformT, glm::vec3(0, 0, -trans_amount));
 		}
 	}
 }
-
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
