@@ -46,7 +46,7 @@ bool firstMouse = true;
 
 
 Shader* shader;
-Model* cube;
+Model* jaspion;
 
 //camera movement variables
 bool trans = false;
@@ -134,7 +134,7 @@ int main() {
 	shader = new Shader();
 	shader->Initialize("test_vs.glsl", "test_fs.glsl");
 
-	cube = new Model("jaspion.obj");
+	jaspion = new Model("jaspion.obj");
 	
 
 	glEnable(GL_CULL_FACE); // cull face
@@ -206,7 +206,7 @@ int main() {
 		glViewport(0, 0, g_gl_width, g_gl_height);
 
 		
-		cube->Draw(*shader);
+		jaspion->Draw(*shader);
 
 		if (GLFW_PRESS == glfwGetKey(g_window, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(g_window, 1);

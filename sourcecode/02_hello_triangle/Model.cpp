@@ -6,7 +6,7 @@
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
 {
 	string filename = string(path);
-	filename = directory + '/' + filename;
+	//filename = directory + '/' + filename;
 
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
@@ -37,6 +37,7 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 	else
 	{
 		std::cout << "Texture failed to load at path: " << path << std::endl;
+		//cout << "filename = " << filename << endl;
 		stbi_image_free(data);
 	}
 
@@ -64,6 +65,7 @@ void Model::loadModel(string path)
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << endl;
+		
 		return;
 	}
 	directory = path.substr(0, path.find_last_of('/'));
