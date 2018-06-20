@@ -3,6 +3,9 @@
 #include <GL/glew.h>		// include GLEW and new version of GL on Windows
 #include <GLFW/glfw3.h> 
 #include <string>
+#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
+
 class Shader
 {
 
@@ -22,6 +25,12 @@ public:
 	void setBool(const std::string &name, bool value) const;
 	void setInt(const std::string &name, int value) const;
 	void setFloat(const std::string &name, float value) const;
+	void setMat4(const std::string &name, const glm::mat4 &mat) const;
+	void setVec3(const std::string &name, const glm::vec3 &value) const;
+	void setVec3(const std::string &name, float x, float y, float z) const;
+
+
+
 };
 //--------------------------------------------------------------------
 namespace ShaderUtilities
