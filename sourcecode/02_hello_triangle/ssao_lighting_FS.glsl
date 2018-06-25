@@ -16,7 +16,7 @@ struct Light {
     float Quadratic;
 };
 uniform Light light;
-
+uniform bool EnableAO;
 void main()
 {             
     // retrieve data from gbuffer
@@ -24,9 +24,17 @@ void main()
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec3 Diffuse = texture(gAlbedo, TexCoords).rgb;
     float AmbientOcclusion = texture(ssao, TexCoords).r;
-    
+    vec3 ambient;
     // then calculate lighting as usual
-    vec3 ambient = vec3(0.3 * Diffuse * AmbientOcclusion);
+	if (EnableAO)
+	{
+		ambient = vec3(0.3 * Diffuse * AmbientOcclusion);
+	}
+	else
+	{
+		ambient = vec3(0.3 * Diffuse);
+	}
+
     vec3 lighting  = ambient; 
     vec3 viewDir  = normalize(-FragPos); // viewpos is (0.0.0)
     // diffuse
