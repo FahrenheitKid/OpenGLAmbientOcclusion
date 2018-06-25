@@ -15,10 +15,6 @@
 
 #define GL_LOG_FILE "gl.log"
 
-extern int g_gl_width;
-extern int g_gl_height;
-extern GLFWwindow *g_window;
-
 bool start_gl();
 
 bool restart_gl_log();
@@ -47,5 +43,7 @@ void print_all( GLuint sp );
 bool is_valid( GLuint sp );
 
 bool parse_file_into_str( const char *file_name, char *shader_str, int max_len );
+void renderQuad();
+void renderCube();
 
 #endif

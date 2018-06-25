@@ -25,6 +25,7 @@
     <ClCompile Include="maths_funcs.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="OpenGLApp.cpp" />
     <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -33,11 +34,17 @@
     <ClInclude Include="maths_funcs.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="OpenGLApp.h" />
     <ClInclude Include="Shader.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="test_fs.glsl" />
-    <None Include="test_vs.glsl" />
+    <None Include="ssao_blur_FS.glsl" />
+    <None Include="ssao_FS.glsl" />
+    <None Include="ssao_geometryCube_FS.glsl" />
+    <None Include="ssao_geometry_FS.glsl" />
+    <None Include="ssao_geometry_VS.glsl" />
+    <None Include="ssao_lighting_FS.glsl" />
+    <None Include="ssao_VS.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F9BBB096-682D-41E0-801C-EB012242AD9F}</ProjectGuid>
